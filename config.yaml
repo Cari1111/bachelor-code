@@ -1,0 +1,81 @@
+# SPDX-FileCopyrightText: : 2017-2024 The PyPSA-Eur Authors
+#
+# SPDX-License-Identifier: CC0-1.0
+
+tutorial: false
+
+
+run:
+  name: "test2" # use this to keep track of runs with different settings
+  disable_progressbar: true
+  shared_resources: "test"
+
+scenario:
+  opts:
+  - Co2L-24h
+
+countries: ['DE']
+
+snapshots:
+  start: "2013-01-01"
+  end: "2014-01-01"
+
+electricity:
+  co2limit: 100.e+6
+
+  extendable_carriers:
+    Generator: [OCGT]
+    StorageUnit: [battery]
+    Store: [H2]
+    Link: [H2 pipeline]
+
+  renewable_carriers: [solar, onwind, offwind-ac, offwind-dc]
+
+
+atlite:
+  default_cutout: de-2013-era5
+  cutouts:
+    de-2013-era5:
+      module: era5
+      time: ["2013", "2014"]
+
+renewable:
+  onwind:
+    cutout: de-2013-era5
+  offwind-ac:
+    cutout: de-2013-era5
+    max_depth: false
+  offwind-dc:
+    cutout: de-2013-era5
+    max_depth: false
+  solar:
+    cutout: de-2013-era5
+
+
+clustering:
+  exclude_carriers: ["OCGT", "offwind-ac", "coal"]
+
+lines:
+  dynamic_line_rating:
+    activate: true
+    cutout: de-2013-era5
+    max_line_rating: 1.3
+
+
+solving:
+  solver:
+    name: gurobi
+    options: gurobi-default
+
+
+plotting:
+  map:
+    boundaries:
+  eu_node_location:
+    x: -5.5
+    y: 46.
+  costs_max: 1000
+  costs_threshold: 0.0000001
+  energy_max:
+  energy_min:
+  energy_threshold: 0.000001
