@@ -11,11 +11,21 @@ def split_list(list, n):
     k, m = divmod(len(list), n)
     return [list[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n)]
 
+def MAD(x):
+    return np.median(np.absolute(x - np.mean(x)))
 
 
-def plot_generator(netw_splits, name: str):
+
+def plot_generator(netw_splits, generator: str):
+    plt.style.use('tableau-colorblind10')
+    means_val = []
+    means_dates = []
     for netw in netw_splits:
-        netw.generators_t.p_max_pu[name].plot(figsize=(16,5))
+        netw.generators_t.p_max_pu[generator].plot(figsize=(16,5))
+        means_val.append(np.mean(netw.generators_t.p_max_pu[generator]))
+        means_dates.append(netw.snapshots[int(len(netw.snapshots)/2)])
+    plt.plot(means_dates, means_val, color='black')
+    plt.savefig(f"plot/generator_{generator}.pdf", format="pdf", bbox_inches="tight")
 
 def plot_feature_array(array):
     f = np.array(array).T
@@ -24,20 +34,20 @@ def plot_feature_array(array):
     plt.legend()
     plt.show()
 
-def plot_results(coef_dict: dict, feature_names, padding=2):
+def plot_results(result_dict: dict, feature_names, MADs, title, padding=2):
     plt.style.use('tableau-colorblind10')
-    n_features = len(list(coef_dict.values())[0])
+    n_features = len(list(result_dict.values())[0])
     
     multiplier = -(n_features-1)/2
     width = 1/(n_features+padding)
 
-    coefs_scaled = np.array([np.abs(x)/np.sum(np.abs(x)) for x in list(coef_dict.values())]).T
+    coefs_scaled = np.array([np.abs(x)/np.sum(np.abs(x)) for x in list(result_dict.values())]).T
     coefs = [[round(y*100) for y in x] for x in coefs_scaled]
 
-    x = np.arange(len(coef_dict))
+    x = np.arange(len(result_dict))
     fig, ax = plt.subplots(layout='constrained')
     fig.set_size_inches(18.5, 6)
-    ax.set_xticks(x, [s.replace(' ', '\n') for s in coef_dict.keys()])
+    ax.set_xticks(x, [s.replace(' ', '\n') for s in result_dict.keys()])
 
     for i, coef in enumerate(coefs):
         offset = width * multiplier
@@ -48,10 +58,15 @@ def plot_results(coef_dict: dict, feature_names, padding=2):
     ax.yaxis.set_major_formatter(tick.PercentFormatter(100))
     ax.margins(y=0.15)
 
-    for i in range(len(coef_dict)-1):
+    for i in range(len(result_dict)-1):
         plt.axvline(x=i+0.5, color='black', lw = 0.5)
 
+    ax_mad = ax.twinx()
+    ax_mad.scatter(range(len(MADs)), MADs, marker='x', color='black')
+
     ax.legend(loc='lower center', ncols=10, bbox_to_anchor=(0.5, 1.01))
+    plt.savefig(f"plots/{title}.pdf", format="pdf", bbox_inches="tight")
+    plt.show()
 
 
 
