@@ -27,10 +27,14 @@ def plot_generator(netw_splits, generator: str):
     plt.plot(means_dates, means_val, color='black')
     plt.savefig(f"plot/generator_{generator}.pdf", format="pdf", bbox_inches="tight")
 
-def plot_feature_array(array):
+def plot_feature_array(array, feature_names = None):
     f = np.array(array).T
+    if feature_names is None or len(feature_names) != len(f):
+        feature_names = [f'feature {i+1}' for i in range(len(f))]
+
+    plt.figure(figsize=(16,5))
     for i, y in enumerate(f):
-        plt.plot(np.arange(len(y)), y, label=f'feature {i+1}')
+        plt.plot(np.arange(len(y)), y, label=feature_names[i])
     plt.legend()
     plt.show()
 
@@ -41,7 +45,12 @@ def plot_results(result_dict: dict, feature_names, MADs, title, padding=2):
     multiplier = -(n_features-1)/2
     width = 1/(n_features+padding)
 
-    coefs_scaled = np.array([np.abs(x)/np.sum(np.abs(x)) for x in list(result_dict.values())]).T
+    def get_proportion(x):
+        if np.sum(np.abs(x)) == 0: 
+            return x
+        return np.abs(x)/np.sum(np.abs(x))
+
+    coefs_scaled = np.array([get_proportion(x) for x in list(result_dict.values())]).T
     coefs = [[round(y*100) for y in x] for x in coefs_scaled]
 
     x = np.arange(len(result_dict))
