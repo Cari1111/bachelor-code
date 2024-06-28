@@ -25,17 +25,19 @@ def plot_generator(netw_splits, generator: str):
         means_val.append(np.mean(netw.generators_t.p_max_pu[generator]))
         means_dates.append(netw.snapshots[int(len(netw.snapshots)/2)])
     plt.plot(means_dates, means_val, color='black')
-    plt.savefig(f"plot/generator_{generator}.pdf", format="pdf", bbox_inches="tight")
+    plt.savefig(f"plots/generator_{generator}.pdf", format="pdf", bbox_inches="tight")
 
-def plot_feature_array(array, feature_names = None):
+def plot_feature_array(array, file_name, feature_names = None):
     f = np.array(array).T
     if feature_names is None or len(feature_names) != len(f):
         feature_names = [f'feature {i+1}' for i in range(len(f))]
 
-    plt.figure(figsize=(16,5))
+    plt.figure(figsize=(18.5, 6))
+    ax = plt.subplot()
     for i, y in enumerate(f):
         plt.plot(np.arange(len(y)), y, label=feature_names[i])
-    plt.legend()
+    ax.legend(loc='lower center', ncol=12, bbox_to_anchor=(0.5, 1.01))
+    plt.savefig(f"plots/{file_name}.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
 def plot_results(result_dict: dict, feature_names, MADs, title, padding=2):
@@ -73,7 +75,7 @@ def plot_results(result_dict: dict, feature_names, MADs, title, padding=2):
     ax_mad = ax.twinx()
     ax_mad.scatter(range(len(MADs)), MADs, marker='x', color='black')
 
-    ax.legend(loc='lower center', ncols=10, bbox_to_anchor=(0.5, 1.01))
+    ax.legend(loc='lower center', ncol=12, bbox_to_anchor=(0.5, 1.01))
     plt.savefig(f"plots/{title}.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
