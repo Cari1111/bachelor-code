@@ -36,7 +36,7 @@ def plot_feature_array(array, file_name, feature_names = None):
     ax = plt.subplot()
     for i, y in enumerate(f):
         plt.plot(np.arange(len(y)), y, label=feature_names[i])
-    ax.legend(loc='lower center', ncol=12, bbox_to_anchor=(0.5, 1.01))
+    ax.legend(loc='lower center', ncol=6, bbox_to_anchor=(0.5, 1.01))
     plt.savefig(f"plots/{file_name}.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
@@ -67,7 +67,7 @@ def plot_results(result_dict: dict, feature_names, MADs, title, padding=2):
         multiplier += 1
 
     ax.yaxis.set_major_formatter(tick.PercentFormatter(100))
-    ax.margins(y=0.15)
+    ax.margins(y=0.2)
 
     for i in range(len(result_dict)-1):
         plt.axvline(x=i+0.5, color='black', lw = 0.5)
@@ -75,7 +75,7 @@ def plot_results(result_dict: dict, feature_names, MADs, title, padding=2):
     ax_mad = ax.twinx()
     ax_mad.scatter(range(len(MADs)), MADs, marker='x', color='black')
 
-    ax.legend(loc='lower center', ncol=12, bbox_to_anchor=(0.5, 1.01))
+    ax.legend(loc='lower center', ncol=6, bbox_to_anchor=(0.5, 1.01))
     plt.savefig(f"plots/{title}.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
