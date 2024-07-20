@@ -27,7 +27,7 @@ def plot_generator(netw_splits, generator: str):
     plt.plot(means_dates, means_val, color='black')
     plt.savefig(f"plots/generator_{generator}.pdf", format="pdf", bbox_inches="tight")
 
-def plot_feature_array(array, file_name, feature_names = None):
+def plot_feature_array(array, file_name, feature_names, feature_colors: dict):
     f = np.array(array).T
     if feature_names is None or len(feature_names) != len(f):
         feature_names = [f'feature {i+1}' for i in range(len(f))]
@@ -35,7 +35,7 @@ def plot_feature_array(array, file_name, feature_names = None):
     plt.figure(figsize=(18.5, 6))
     ax = plt.subplot()
     for i, y in enumerate(f):
-        plt.plot(np.arange(len(y)), y, label=feature_names[i])
+        plt.plot(np.arange(len(y)), y, label=feature_names[i], color=feature_colors[i])
     ax.legend(loc='lower center', ncol=4, bbox_to_anchor=(0.5, 1.01))
     plt.savefig(f"plots/{file_name}.pdf", format="pdf", bbox_inches="tight")
     plt.show()
@@ -50,7 +50,7 @@ def scale_results(results: pd.DataFrame):
         results[key] = get_proportion(res_array)
     return results
 
-def plot_results(result_df: pd.DataFrame, MADs, file_name, padding=2):
+def plot_results(result_df: pd.DataFrame, MADs, file_name, feature_colors: dict, padding=2):
     plt.style.use('tableau-colorblind10')
     n_features = len(result_df.index)
     
@@ -72,7 +72,7 @@ def plot_results(result_df: pd.DataFrame, MADs, file_name, padding=2):
     # plot bars
     for feature, results in result_df.iterrows():
         offset = width * multiplier
-        ax.bar(x + offset, results, width, label=feature)
+        ax.bar(x + offset, results, width, label=feature, color=feature_colors[feature])
         multiplier += 1
 
     # plot vertical lines between result categories
@@ -89,7 +89,7 @@ def plot_results(result_df: pd.DataFrame, MADs, file_name, padding=2):
     plt.savefig(f"plots/{file_name}.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
-def plot_all_results(results: list[pd.DataFrame], file_name, padding=2):
+def plot_all_results(results: list[pd.DataFrame], file_name, feature_colors: dict, padding=2):
     plt.style.use('tableau-colorblind10')
     feature_keys = results[0].index
     result_keys = results[0].columns
@@ -117,7 +117,7 @@ def plot_all_results(results: list[pd.DataFrame], file_name, padding=2):
     for feature, mean in mean_df.iterrows():
         offset = width * multiplier
         error = [min_df.loc[feature], max_df.loc[feature]]
-        ax.bar(x + offset, mean, width, label=feature, yerr=error, capsize=width*35)
+        ax.bar(x + offset, mean, width, label=feature, yerr=error, capsize=width*35, color=feature_colors[feature])
         multiplier += 1
 
     ax.set_axisbelow(True)
