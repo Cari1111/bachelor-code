@@ -14,6 +14,9 @@ def split_list(list, n):
 def MAD(x):
     return np.median(np.absolute(x - np.mean(x)))
 
+def filter_dict(dict, keys):
+    return {k:dict[k] for k in keys if k in dict.keys()}
+
 
 
 def plot_generator(netw_splits, generator: str):
@@ -50,7 +53,7 @@ def scale_results(results: pd.DataFrame):
         results[key] = get_proportion(res_array)
     return results
 
-def plot_results(result_df: pd.DataFrame, MADs, file_name, feature_colors: dict, padding=2):
+def plot_results(result_df: pd.DataFrame, MADs: dict, file_name, feature_colors: dict, padding=2, text_rotation=30, n_cols=4):
     plt.style.use('tableau-colorblind10')
     n_features = len(result_df.index)
     
@@ -61,12 +64,12 @@ def plot_results(result_df: pd.DataFrame, MADs, file_name, feature_colors: dict,
 
     x = np.arange(len(result_df.columns))
     fig, ax = plt.subplots(layout='constrained')
-    fig.set_size_inches(18.5, 6)
+    fig.set_size_inches(18.5, 7.5)
     
     # plot result labels, grid, axis
-    ax.set_xticks(x, [s.replace(' ', '\n') for s in result_df.columns], rotation=25)
+    ax.set_xticks(x, [s.replace(' ', '\n') for s in result_df.columns], rotation=text_rotation)
     ax.set_axisbelow(True)
-    ax.yaxis.set_major_formatter(tick.PercentFormatter(100))
+    ax.yaxis.set_major_formatter(tick.PercentFormatter(100, decimals=0))
     ax.yaxis.grid(color='gray', linestyle='dashed')
 
     # plot bars
@@ -81,15 +84,15 @@ def plot_results(result_df: pd.DataFrame, MADs, file_name, feature_colors: dict,
 
     # plot MADs with a separate axis
     ax_mad = ax.twinx()
-    ax_mad.scatter(range(len(MADs)), MADs, marker='x', color='black')
+    ax_mad.scatter(range(len(MADs)), list(MADs.values()), marker='x', color='black')
 
-    ax.legend(loc='lower center', ncol=4, bbox_to_anchor=(0.5, 1.01))
+    ax.legend(loc='lower center', ncol=n_cols, bbox_to_anchor=(0.5, 1.01))
 
     # save as pdf and show plot
     plt.savefig(f"plots/{file_name}.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
-def plot_all_results(results: list[pd.DataFrame], file_name, feature_colors: dict, padding=2):
+def plot_all_results(results: list[pd.DataFrame], file_name, feature_colors: dict, padding=2, text_rotation=30, n_cols=4):
     plt.style.use('tableau-colorblind10')
     feature_keys = results[0].index
     result_keys = results[0].columns
@@ -111,8 +114,8 @@ def plot_all_results(results: list[pd.DataFrame], file_name, feature_colors: dic
 
     x = np.arange(len(result_keys))
     fig, ax = plt.subplots(layout='constrained')
-    fig.set_size_inches(18.5, 6)
-    ax.set_xticks(x, [s.replace(' ', '\n') for s in result_keys], rotation=25)
+    fig.set_size_inches(18.5, 7.3)
+    ax.set_xticks(x, [s.replace(' ', '\n') for s in result_keys], rotation=text_rotation)
 
     for feature, mean in mean_df.iterrows():
         offset = width * multiplier
@@ -121,18 +124,57 @@ def plot_all_results(results: list[pd.DataFrame], file_name, feature_colors: dic
         multiplier += 1
 
     ax.set_axisbelow(True)
-    ax.yaxis.set_major_formatter(tick.PercentFormatter(100))
+    ax.yaxis.set_major_formatter(tick.PercentFormatter(100, decimals=0))
     ax.yaxis.grid(color='gray', linestyle='dashed')
 
     for i in range(len(result_keys)-1):
         plt.axvline(x=i+0.5, color='black', lw = 0.5)
 
-    ax.legend(loc='lower center', ncol=4, bbox_to_anchor=(0.5, 1.01))
+    ax.legend(loc='lower center', ncol=n_cols, bbox_to_anchor=(0.5, 1))
     plt.savefig(f"plots/{file_name}.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
+def plot_result(result_df: pd.DataFrame, MADs: list, file_name, title, feature_colors: dict, padding=2, text_rotation=0, n_cols=4):
+    n_features = len(result_df.index)
+    
+    multiplier = -(n_features-1)/2
+    width = 1/(n_features+padding)
 
+    scale_results(result_df)
 
+    x = np.arange(len(result_df.columns) + 1)
+    fig, ax = plt.subplots(layout='constrained')
+    fig.set_size_inches(18, 8)
+    
+    # plot result labels, grid, axis
+    ax.set_xticks(x, [s.replace(' ', '\n') for s in result_df.columns] + ['all'], rotation=text_rotation)
+    ax.set_axisbelow(True)
+    ax.yaxis.set_major_formatter(tick.PercentFormatter(100, decimals=0))
+    ax.yaxis.grid(color='gray', linestyle='dashed')
+
+    # plot bars
+    for feature, results in result_df.iterrows():
+        mean = np.mean(results)
+        error = [[mean-np.min(results)], [np.max(results)-mean]]
+        offset = width * multiplier
+        ax.bar(x[:-1] + offset, results, width, label=feature, color=feature_colors[feature])
+        ax.bar(x[-1]+ offset, mean, width, yerr=error, capsize=width*35, color=feature_colors[feature])
+        multiplier += 1
+
+    # plot vertical lines between result categories
+    for i in range(len(x)-1):
+        plt.axvline(x=i+0.5, color='black', lw = 0.5)
+
+    # plot MADs with a separate axis
+    ax_mad = ax.twinx()
+    ax_mad.scatter(range(len(MADs)), MADs, marker='x', color='black')
+
+    ax.set_title(title, y=1.3)
+    ax.legend(loc='lower center', ncol=n_cols, bbox_to_anchor=(0.5, 1))
+
+    # save as pdf and show plot
+    plt.savefig(f"plots/{file_name}.pdf", format="pdf", bbox_inches="tight")
+    plt.show()
 
 
 
