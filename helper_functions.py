@@ -169,7 +169,7 @@ def plot_result(result_df: pd.DataFrame, MADs: list, file_name, title, feature_c
     ax_mad = ax.twinx()
     ax_mad.scatter(range(len(MADs)), MADs, marker='x', color='black')
 
-    ax.set_title(title, y=1.3)
+    ax.set_title(title, y=1.22 + 0.13*((n_features-1) // n_cols))
     ax.legend(loc='lower center', ncol=n_cols, bbox_to_anchor=(0.5, 1))
 
     # save as pdf and show plot
